@@ -1,0 +1,78 @@
+services:
+
+  keycloak:
+    build: .
+    entrypoint: /opt/keycloak/bin/kc.sh start --optimized --import-realm --spi-theme-static-max-age=-1 --spi-theme-cache-themes=false --spi-theme-cache-templates=false
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_PROXY: edge
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_DEBUG: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_BACKCHANNEL: false
+      KC_LOG_LEVEL: info,org.keycloak.events:debug
+    networks:
+      - web
+    ports:
+      - "8080:8080"
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:9000/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 2s
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./themes/bzhcamp/:/opt/keycloak/themes/bzhcamp/
+    depends_on:
+      postgres:
+        condition: service_healthy
+      smtp:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16.1
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    networks:
+      - web
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  smtp:
+    image: mailhog/mailhog:v1.0.1
+    networks:
+      - web
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider http://127.0.0.1:8025/"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: none
+
+  nginx:
+    image: nginx:1.25.3-alpine
+    ports:
+      - 8081:80
+    volumes:
+      - ./myapp:/usr/share/nginx/html
+
+networks:
+  web:
+    driver: bridge

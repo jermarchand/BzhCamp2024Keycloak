@@ -1,0 +1,55 @@
+{
+  "id": "bzhcamp",
+  "realm": "bzhcamp",
+  "enabled": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "fr"
+  ],
+  "defaultLocale": "fr",
+  "smtpServer": {
+    "replyToDisplayName": "",
+    "starttls": "false",
+    "auth": "",
+    "port": "1025",
+    "host": "smtp",
+    "replyTo": "no-reply@bzhcamp.local",
+    "from": "admin@bzhcamp.local",
+    "fromDisplayName": "",
+    "envelopeFrom": "",
+    "ssl": "false"
+  },
+  "clients": [
+    {
+      "clientId": "myapp",
+      "enabled": true,
+      "bearerOnly": false,
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:8081/*"
+      ],
+      "webOrigins": [
+          "+"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "jerome",
+      "email": "jerome@local.lan",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "jerome"
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [],
+    "client": {}
+  },
+  "groups": []
+}
